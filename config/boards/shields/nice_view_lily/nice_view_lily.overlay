@@ -1,0 +1,21 @@
+/*
+ * Same display node as ZMK's nice_view shield (MIT). Needs a shield that
+ * defines &nice_view_spi listed before this one (lily58_nice_view_adapter).
+ */
+
+&nice_view_spi {
+    status = "okay";
+    nice_view: ls0xx@0 {
+        compatible = "sharp,ls0xx";
+        spi-max-frequency = <1000000>;
+        reg = <0>;
+        width = <160>;
+        height = <68>;
+    };
+};
+
+/ {
+    chosen {
+        zephyr,display = &nice_view;
+    };
+};

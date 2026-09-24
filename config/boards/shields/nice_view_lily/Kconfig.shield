@@ -1,0 +1,4 @@
+# Sina's nice!view screens: Amp on the left (central), slideshow on the right (peripheral)
+
+config SHIELD_NICE_VIEW_LILY
+    def_bool $(shields_list_contains,nice_view_lily)

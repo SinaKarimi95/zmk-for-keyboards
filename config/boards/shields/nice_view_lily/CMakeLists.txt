@@ -1,0 +1,12 @@
+if(CONFIG_ZMK_DISPLAY AND CONFIG_NICE_VIEW_LILY_SCREEN)
+  zephyr_library_include_directories(${CMAKE_SOURCE_DIR}/include)
+  zephyr_library_sources(custom_status_screen.c)
+  zephyr_library_sources(fb.c)
+
+  if(NOT CONFIG_ZMK_SPLIT OR CONFIG_ZMK_SPLIT_ROLE_CENTRAL)
+    zephyr_library_sources(amp.c)
+  else()
+    zephyr_library_sources(art.c)
+    zephyr_library_sources(slideshow.c)
+  endif()
+endif()
