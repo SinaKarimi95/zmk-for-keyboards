@@ -1,0 +1,4 @@
+# nice!view on the PandaKB Lily58 PCB (CS moved off P0.06, which drives the RGB)
+
+config SHIELD_LILY58_NICE_VIEW_ADAPTER
+    def_bool $(shields_list_contains,lily58_nice_view_adapter)
