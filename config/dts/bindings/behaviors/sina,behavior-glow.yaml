@@ -1,0 +1,5 @@
+description: Underglow colour and effect, separate from the key lights
+
+compatible: "sina,behavior-glow"
+
+include: two_param.yaml

@@ -278,7 +278,7 @@ ZMK_DISPLAY_WIDGET_LISTENER(ss_activity, struct ss_activity_state, activity_upda
 ZMK_SUBSCRIPTION(ss_activity, zmk_activity_state_changed);
 
 void nv_lily_screen_init(lv_obj_t *parent) {
-    nv_init(parent);
+    nv_init(parent, false);
 
     rng_state = k_cycle_get_32() | 1;
     st.cur = rng() % ARRAY_SIZE(art);

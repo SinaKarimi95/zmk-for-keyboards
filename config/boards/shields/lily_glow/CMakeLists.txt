@@ -1,0 +1,5 @@
+if(CONFIG_ZMK_RGB_UNDERGLOW)
+  zephyr_library_include_directories(${CMAKE_SOURCE_DIR}/include)
+  zephyr_library_sources(glow.c)
+  zephyr_library_sources(zones_strip.c)
+endif()

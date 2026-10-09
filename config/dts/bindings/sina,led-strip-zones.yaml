@@ -1,0 +1,20 @@
+description: |
+  Sits between ZMK's RGB underglow and the real LED strip. Passes ZMK's frames
+  through, recolours the underglow LEDs with the "glow" colour/effect, and
+  blanks everything while lights are not allowed (idle on battery).
+
+compatible: "sina,led-strip-zones"
+
+properties:
+  led-strip:
+    type: phandle
+    required: true
+    description: The real LED strip to drive.
+  chain-length:
+    type: int
+    required: true
+    description: Number of LEDs, same as the real strip's chain-length.
+  underglow-indices:
+    type: array
+    required: true
+    description: Chain positions of the underglow LEDs.

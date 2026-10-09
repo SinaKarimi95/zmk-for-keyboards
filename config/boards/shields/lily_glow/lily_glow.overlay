@@ -1,0 +1,27 @@
+/*
+ * ZMK's underglow drives &lily_strip instead of the real &led_strip, so the
+ * underglow LEDs can get their own colour. List this shield after lily58_*.
+ */
+
+/ {
+    chosen {
+        zmk,underglow = &lily_strip;
+    };
+
+    lily_strip: lily_strip {
+        compatible = "sina,led-strip-zones";
+        led-strip = <&led_strip>;
+        chain-length = <36>;
+        /* PandaKB's dtsi says the first 6 LEDs in the chain are underglow (unverified) */
+        underglow-indices = <0 1 2 3 4 5>;
+    };
+
+    behaviors {
+        /* Can be invoked on the peripheral, so the name must be <= 8 characters */
+        glow: glow {
+            compatible = "sina,behavior-glow";
+            #binding-cells = <2>;
+            display-name = "Underglow colour";
+        };
+    };
+};

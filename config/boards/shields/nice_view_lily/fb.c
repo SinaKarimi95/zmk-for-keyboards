@@ -89,9 +89,9 @@ static const uint8_t font5x7[][5] = {
 /* 5x7 lightning bolt, one byte per row, bit 4 = leftmost column */
 static const uint8_t bolt5x7[7] = {0x03, 0x06, 0x0C, 0x1F, 0x06, 0x0C, 0x18};
 
-void nv_init(lv_obj_t *parent) {
-    ink = lv_color_black();
-    paper = lv_color_white();
+void nv_init(lv_obj_t *parent, bool invert) {
+    ink = invert ? lv_color_white() : lv_color_black();
+    paper = invert ? lv_color_black() : lv_color_white();
 
     canvas = lv_canvas_create(parent);
     lv_canvas_set_buffer(canvas, cbuf, NATIVE_W, NATIVE_H, LV_IMG_CF_TRUE_COLOR);

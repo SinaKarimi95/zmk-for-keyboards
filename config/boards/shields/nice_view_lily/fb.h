@@ -13,7 +13,9 @@
 #define NV_H 160
 #define NV_PI 3.14159265f
 
-void nv_init(lv_obj_t *parent);
+/* invert = false: LVGL white paper, black ink, which shows as a dark background
+ * on the nice!view. invert = true: light background, dark ink. */
+void nv_init(lv_obj_t *parent, bool invert);
 void nv_clear(void);
 void nv_flush(void);
 
