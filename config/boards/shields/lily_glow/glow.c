@@ -145,9 +145,12 @@ static struct led_rgb hsv_to_rgb(float h, float s, float v) {
     return (struct led_rgb){.r = (uint8_t)(255 * r), .g = (uint8_t)(255 * g), .b = (uint8_t)(255 * b)};
 }
 
-struct led_rgb lily_glow_pixel(void) {
+struct led_rgb lily_glow_pixel_value(float v) {
     const struct glow_color *c = &colors[state.color < COLOR_COUNT ? state.color : DEFAULT_COLOR];
+    return hsv_to_rgb(c->h, c->s / 100.0f, v);
+}
 
+struct led_rgb lily_glow_pixel(void) {
     /* Follow the key lights' brightness, scaled the way ZMK scales it */
     struct zmk_led_hsb keys = zmk_rgb_underglow_calc_brt(0);
     float v = (CONFIG_ZMK_RGB_UNDERGLOW_BRT_MIN +
@@ -165,7 +168,7 @@ struct led_rgb lily_glow_pixel(void) {
         v *= tri * tri * (3.0f - 2.0f * tri);
     }
 
-    return hsv_to_rgb(c->h, c->s / 100.0f, v);
+    return lily_glow_pixel_value(v);
 }
 
 /* Saving, debounced like ZMK's own RGB settings */

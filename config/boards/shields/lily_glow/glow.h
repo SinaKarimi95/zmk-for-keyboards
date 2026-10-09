@@ -41,3 +41,6 @@ bool lily_glow_lights_allowed(void);
 
 /* Current underglow pixel (already scaled by ZMK's brightness) */
 struct led_rgb lily_glow_pixel(void);
+
+/* The underglow colour at a given value (0..1), for syncing to the key lights */
+struct led_rgb lily_glow_pixel_value(float v);

@@ -21,6 +21,9 @@ LOG_MODULE_DECLARE(zmk, CONFIG_ZMK_LOG_LEVEL);
 
 #include "glow.h"
 
+/* Order of rgb_underglow.c's effect enum: 0 solid, 1 breathe (as &rgb_ug RGB_EFS_CMD 1) */
+#define ZMK_EFFECT_BREATHE 1
+
 struct zones_config {
     const struct device *strip;
     struct led_rgb *buf;
@@ -31,7 +34,30 @@ struct zones_config {
 
 struct zones_data {
     bool dark;
+    size_t key_index; /* a key light (not underglow) to read the breathe level from */
 };
+
+static bool is_glow_index(const struct zones_config *cfg, size_t index) {
+    for (size_t i = 0; i < cfg->glow_count; i++) {
+        if (cfg->glow[i] == index) {
+            return true;
+        }
+    }
+    return false;
+}
+
+static struct led_rgb glow_pixel(const struct zones_config *cfg, const struct zones_data *data,
+                                 const struct led_rgb *pixels, size_t n) {
+    /* Both on breathe: take the brightness ZMK just gave a key light, so the
+     * underglow breathes in step with the keys */
+    if (lily_glow_fx() == GLOW_FX_BREATHE && zmk_rgb_underglow_calc_effect(0) == ZMK_EFFECT_BREATHE &&
+        data->key_index < n) {
+        const struct led_rgb *key = &pixels[data->key_index];
+        uint8_t v = MAX(key->r, MAX(key->g, key->b));
+        return lily_glow_pixel_value(v / 255.0f);
+    }
+    return lily_glow_pixel();
+}
 
 static int zones_update_rgb(const struct device *dev, struct led_rgb *pixels, size_t num_pixels) {
     const struct zones_config *cfg = dev->config;
@@ -49,13 +75,17 @@ static int zones_update_rgb(const struct device *dev, struct led_rgb *pixels, si
     }
     data->dark = false;
 
-    memcpy(cfg->buf, pixels, n * sizeof(struct led_rgb));
-
     /* ZMK's off frame is all black; leave the underglow off with it */
     bool on = false;
     zmk_rgb_underglow_get_state(&on);
+    struct led_rgb glow = {0};
     if (on) {
-        struct led_rgb glow = lily_glow_pixel();
+        glow = glow_pixel(cfg, data, pixels, n);
+    }
+
+    memcpy(cfg->buf, pixels, n * sizeof(struct led_rgb));
+
+    if (on) {
         for (size_t i = 0; i < cfg->glow_count; i++) {
             if (cfg->glow[i] < n) {
                 cfg->buf[cfg->glow[i]] = glow;
@@ -77,10 +107,19 @@ static const struct led_strip_driver_api zones_api = {
 
 static int zones_init(const struct device *dev) {
     const struct zones_config *cfg = dev->config;
+    struct zones_data *data = dev->data;
 
     if (!device_is_ready(cfg->strip)) {
         LOG_ERR("LED strip %s is not ready", cfg->strip->name);
         return -ENODEV;
+    }
+
+    data->key_index = cfg->length;
+    for (size_t i = 0; i < cfg->length; i++) {
+        if (!is_glow_index(cfg, i)) {
+            data->key_index = i;
+            break;
+        }
     }
     return 0;
 }
