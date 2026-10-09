@@ -22,6 +22,10 @@
 };
 &right_encoder {
     status = "okay";
+    /* A and B swapped from lily58.dtsi: on Sina's board the stock order made
+     * clockwise count as counter-clockwise (scrolling up instead of down) */
+    a-gpios = <&pro_micro 21 (GPIO_ACTIVE_HIGH | GPIO_PULL_UP)>;
+    b-gpios = <&pro_micro 20 (GPIO_ACTIVE_HIGH | GPIO_PULL_UP)>;
 };
 / {
     chosen {
