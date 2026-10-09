@@ -87,7 +87,7 @@ static void draw_header(void) {
     if (st.usb_out) {
         nv_text("USB", 2, 2, true);
     } else {
-        char buf[12];
+        char buf[16];
         snprintf(buf, sizeof(buf), "BT%d", st.profile + 1);
         nv_text(buf, 2, 2, true);
         int x = 2 + nv_text_width(buf) + 4;
