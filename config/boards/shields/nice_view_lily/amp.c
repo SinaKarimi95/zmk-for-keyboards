@@ -5,9 +5,7 @@
  *   VU meter  needle follows typing speed
  *   fretboard six strings = layers 0-5; the active layer's string wobbles
  *             harder and faster the faster you type, and is straight at 0 WPM
- *   footer    layer digits (active one inverted) and the layer name; for 2 s
- *             after a colour change it shows the new colour instead
- *             ("KEYS BLUE", "GLOW PINK", "GLOW BREATH")
+ *   footer    layer digits (active one inverted) and the layer name
  *   CAPS      inverted tag in the WPM row while Caps Lock is on
  *
  * Drawn dark-on-light (nv_init invert), unlike the right screen.
@@ -41,19 +39,11 @@ LOG_MODULE_DECLARE(zmk, CONFIG_ZMK_LOG_LEVEL);
 #include <zmk/usb.h>
 #include <zmk/wpm.h>
 
-#if IS_ENABLED(CONFIG_SHIELD_LILY_GLOW)
-#include <zmk/rgb_underglow.h>
-#include "../lily_glow/glow.h"
-#endif
-
 #include "fb.h"
 #include "lily.h"
 
 /* HID LED report bit 1 = Caps Lock */
 #define CAPS_LOCK_BIT BIT(1)
-
-#define POPUP_MS 2000
-#define WATCH_MS 250
 
 #define FRAME_MS 50
 #define WPM_MAX 140
@@ -78,10 +68,6 @@ static struct {
 } st;
 
 static lv_timer_t *anim;
-static lv_timer_t *watch;
-
-static char popup[16];
-static int64_t popup_until;
 
 static void draw_header(void) {
     if (st.usb_out) {
@@ -179,12 +165,6 @@ static void draw_footer(void) {
         }
     }
 
-    if (popup_until != 0) {
-        nv_rect(1, 143, 66, 11, true);
-        nv_text(popup, (NV_W - nv_text_width(popup)) / 2, 145, false);
-        return;
-    }
-
     char name[NAME_MAX_CHARS + 1];
     if (st.label == NULL || st.label[0] == '\0') {
         snprintf(name, sizeof(name), "LAYER %d", st.layer);
@@ -238,49 +218,6 @@ static void kick_anim(void) {
     }
 }
 
-/* Colour popups: name the colour while you turn the knob or press a glow key */
-
-#if IS_ENABLED(CONFIG_SHIELD_LILY_GLOW)
-static uint32_t seen_glow;
-static uint16_t seen_hue;
-static uint8_t seen_sat;
-
-static void show_popup(const char *prefix, const char *word) {
-    snprintf(popup, sizeof(popup), "%s %s", prefix, word);
-    popup_until = k_uptime_get() + POPUP_MS;
-    draw();
-}
-#endif
-
-static void watch_cb(lv_timer_t *timer) {
-    if (st.idle) {
-        return;
-    }
-
-#if IS_ENABLED(CONFIG_SHIELD_LILY_GLOW)
-    uint32_t serial = lily_glow_serial();
-    if (serial != seen_glow) {
-        seen_glow = serial;
-        if (lily_glow_last_change() == GLOW_CHANGE_FX) {
-            show_popup("GLOW", lily_glow_fx() == GLOW_FX_BREATHE ? "BREATH" : "SOLID");
-        } else {
-            show_popup("GLOW", lily_glow_color_name(lily_glow_color()));
-        }
-    }
-
-    struct zmk_led_hsb keys = zmk_rgb_underglow_calc_hue(0);
-    if (keys.h != seen_hue || keys.s != seen_sat) {
-        seen_hue = keys.h;
-        seen_sat = keys.s;
-        show_popup("KEYS", lily_color_name(keys.h, keys.s));
-    }
-#endif
-
-    if (popup_until != 0 && k_uptime_get() >= popup_until) {
-        popup_until = 0;
-        draw();
-    }
-}
 
 /* Battery */
 
@@ -438,15 +375,6 @@ void nv_lily_screen_init(lv_obj_t *parent) {
 
     anim = lv_timer_create(anim_cb, FRAME_MS, NULL);
     lv_timer_pause(anim);
-
-#if IS_ENABLED(CONFIG_SHIELD_LILY_GLOW)
-    /* Only announce changes made from now on */
-    seen_glow = lily_glow_serial();
-    struct zmk_led_hsb keys = zmk_rgb_underglow_calc_hue(0);
-    seen_hue = keys.h;
-    seen_sat = keys.s;
-#endif
-    watch = lv_timer_create(watch_cb, WATCH_MS, NULL);
 
     amp_battery_init();
     amp_output_init();
