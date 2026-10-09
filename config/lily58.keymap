@@ -122,7 +122,9 @@
 &kp LCTRL  &none   &none   &none   &kp F8  &kp F5   &kp C_MUTE      &none        &kp N0  &kp N1         &kp N2       &kp N3          &kp KP_DOT   &kp RET
                    &trans  &trans  &kp LALT  &trans                              &trans  &trans  &trans  &trans
             >;
-            sensor-bindings = <&inc_dec_kp C_NEXT C_PREV &trans>;
+            /* Right knob left out on purpose: an unassigned sensor falls
+             * through to the layer below (&trans isn't valid for sensors) */
+            sensor-bindings = <&inc_dec_kp C_NEXT C_PREV>;
         };
 
         adj_layer {
